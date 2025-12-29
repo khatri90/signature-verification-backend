@@ -1,0 +1,47 @@
+<!-- templates/signatures/signature_form.html -->
+{% extends 'base/base.html' %}
+
+{% block title %}Add Signature - Signature Verification System{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h4>Add Signature for {{ profile.name }}</h4>
+    </div>
+    <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <div class="mb-3">
+                <label for="id_image" class="form-label">Signature Image</label>
+                <input type="file" name="image" class="form-control" id="id_image" accept="image/*" required>
+                <div class="form-text">
+                    Upload a clear image of the signature. Supported formats: JPG, PNG, GIF.
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label for="id_notes" class="form-label">Notes (Optional)</label>
+                <textarea name="notes" class="form-control" id="id_notes" rows="3"></textarea>
+            </div>
+            
+            <div class="d-flex justify-content-between">
+                <a href="{% url 'profile_detail' profile.id %}" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary">Upload Signature</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="mt-4">
+    <div class="alert alert-info">
+        <h5>Tips for good signature images:</h5>
+        <ul>
+            <li>Use a white background for best results</li>
+            <li>Ensure the signature is clearly visible</li>
+            <li>Crop the image to remove unnecessary white space</li>
+            <li>The system works best with high-quality images</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

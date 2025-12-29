@@ -1,0 +1,19 @@
+# Web Framework
+Django>=4.2.0,<5.3.0
+djangorestframework>=3.14.0
+django-cors-headers>=4.0.0
+python-dotenv>=1.0.0
+
+# Database
+mysqlclient>=2.1.0
+
+# Image Processing
+opencv-python>=4.7.0
+numpy>=1.22.0
+scikit-image>=0.19.0
+scipy>=1.10.0
+mahotas>=1.4.0
+imutils>=0.5.4
+
+# Machine Learning
+tensorflow>=2.10.0

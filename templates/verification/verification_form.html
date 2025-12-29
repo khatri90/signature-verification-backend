@@ -1,0 +1,168 @@
+<!-- templates/verification/verification_form.html -->
+{% extends 'base/base.html' %}
+
+{% block title %}Verify Signature - Signature Verification System{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="card">
+        <div class="card-header">
+            <h4>Signature Verification</h4>
+        </div>
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <div class="mb-3">
+                    <label for="id_user_profile" class="form-label">Select User Profile</label>
+                    <select name="user_profile_id" class="form-select" id="id_user_profile" required>
+                        <option value="">Select a user profile</option>
+                        {% for profile in profiles %}
+                        <option value="{{ profile.id }}" {% if selected_profile == profile.id %}selected{% endif %}>
+                            {{ profile.name }} ({{ profile.id_number }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="id_test_signature" class="form-label">Upload Signature to Verify</label>
+                    <input type="file" name="test_signature" class="form-control" id="id_test_signature" accept="image/*" required>
+                </div>
+                
+                <div class="mb-3 form-check">
+                    <input type="checkbox" name="save_to_references" class="form-check-input" id="id_save_to_references">
+                    <label class="form-check-label" for="id_save_to_references">
+                        Save as reference if verified as genuine
+                    </label>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="id_notes" class="form-label">Notes (Optional)</label>
+                    <textarea name="notes" class="form-control" id="id_notes" rows="2"></textarea>
+                </div>
+                
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary">Verify Signature</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    {% if result %}
+    <div class="result-container {% if result.result == 'genuine' %}result-genuine{% else %}result-forged{% endif %}">
+        <h4 class="mb-3">Verification Result: 
+            <span class="{% if result.result == 'genuine' %}text-success{% else %}text-danger{% endif %}">
+                {{ result.result|title }}
+            </span>
+        </h4>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h5>Test Signature</h5>
+                    </div>
+                    <div class="card-body text-center">
+                        <img src="{{ result.test_signature.url }}" alt="Test Signature" class="img-fluid signature-image">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h5>Verification Details</h5>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>User:</strong> {{ result.user_profile.name }}</p>
+                        <p><strong>Confidence:</strong> {{ result.confidence|floatformat:2 }}%</p>
+                        <p><strong>Verified at:</strong> {{ result.verified_at }}</p>
+                        {% if result.added_to_references %}
+                        <div class="alert alert-success">
+                            This signature has been added to the reference database.
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+    <div class="card-header">
+        <h5>Similarity Metrics</h5>
+    </div>
+    <div class="card-body">
+        <div class="row" id="metrics-container">
+            <!-- Metrics will be dynamically added here via JavaScript -->
+        </div>
+    </div>
+</div>
+
+<script>
+    // Sample data - replace with your actual data
+    const result = {
+        verification_metrics: {
+            "cosine_similarity": 85,
+            "jaccard_index": 72,
+            "edit_distance": 90,
+            "semantic_similarity": 78
+        }
+    };
+    
+    // Get the container for metrics
+    const metricsContainer = document.getElementById('metrics-container');
+    
+    // Generate progress bars for each metric
+    for (const [metricName, metricValue] of Object.entries(result.verification_metrics)) {
+        // Create formatted metric name (capitalize first letter of each word)
+        const formattedName = metricName.split('_')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+        
+        // Create column div
+        const colDiv = document.createElement('div');
+        colDiv.className = 'col-md-6 mb-3';
+        
+        // Add heading
+        const heading = document.createElement('h6');
+        heading.textContent = formattedName;
+        colDiv.appendChild(heading);
+        
+        // Create progress container
+        const progressDiv = document.createElement('div');
+        progressDiv.className = 'progress';
+        
+        // Create progress bar
+        const progressBar = document.createElement('div');
+        progressBar.className = 'progress-bar';
+        progressBar.role = 'progressbar';
+        progressBar.style.width = `${Math.round(metricValue)}%`;
+        progressBar.setAttribute('aria-valuenow', Math.round(metricValue));
+        progressBar.setAttribute('aria-valuemin', '0');
+        progressBar.setAttribute('aria-valuemax', '100');
+        progressBar.textContent = `${Math.round(metricValue)}%`;
+        
+        // Assemble the elements
+        progressDiv.appendChild(progressBar);
+        colDiv.appendChild(progressDiv);
+        metricsContainer.appendChild(colDiv);
+    }
+</script>
+        
+        {% if not result.added_to_references and result.result == 'genuine' %}
+        <div class="card mt-3">
+            <div class="card-body">
+                <form method="post" action="{% url 'add_to_references' result.id %}">
+                    {% csrf_token %}
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-success">Add to Reference Signatures</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,24 @@
+<!-- templates/profiles/profile_delete.html -->
+{% extends 'base/base.html' %}
+
+{% block title %}Delete Profile - Signature Verification System{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header bg-danger text-white">
+        <h4>Delete Profile</h4>
+    </div>
+    <div class="card-body">
+        <h5>Are you sure you want to delete the profile for "{{ profile.name }}"?</h5>
+        <p>This will permanently delete the profile and all associated signatures and verification records.</p>
+        
+        <form method="post">
+            {% csrf_token %}
+            <div class="d-flex justify-content-between mt-4">
+                <a href="{% url 'profile_detail' profile.id %}" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-danger">Delete</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

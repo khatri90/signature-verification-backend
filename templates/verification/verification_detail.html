@@ -1,0 +1,131 @@
+<!-- templates/verification/verification_detail.html -->
+{% extends 'base/base.html' %}
+
+{% block title %}Verification Details - Signature Verification System{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="card">
+        <div class="card-header">
+            <h4>Verification Details</h4>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h5>Test Signature</h5>
+                        </div>
+                        <div class="card-body text-center">
+                            <img src="{{ record.test_signature.url }}" alt="Test Signature" class="img-fluid signature-image">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h5>Result Information</h5>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Profile:</strong> 
+                                <a href="{% url 'profile_detail' record.user_profile.id %}">{{ record.user_profile.name }}</a>
+                            </p>
+                            <p><strong>Result:</strong> 
+                                <span class="badge {% if record.result == 'genuine' %}bg-success{% else %}bg-danger{% endif %}">
+                                    {{ record.result|title }}
+                                </span>
+                            </p>
+                            <p><strong>Confidence:</strong> {{ record.confidence|floatformat:2 }}%</p>
+                            <p><strong>Verified at:</strong> {{ record.verified_at }}</p>
+                            <p><strong>Verified by:</strong> {{ record.verified_by.username }}</p>
+                            
+                            {% if record.added_to_references %}
+                            <div class="alert alert-success">
+                                This signature has been added to the reference database.
+                            </div>
+                            {% elif record.result == 'genuine' %}
+                            <form method="post" action="{% url 'add_to_references' record.id %}">
+                                {% csrf_token %}
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-success">Add to Reference Signatures</button>
+                                </div>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mt-3">
+    <div class="card-header">
+        <h5>Similarity Metrics</h5>
+    </div>
+    <div class="card-body">
+        <div class="row" id="metrics-container">
+            <!-- Metrics will be dynamically added here via JavaScript -->
+        </div>
+    </div>
+</div>
+
+<script>
+    // Sample data - replace with your actual data
+    const record = {
+        verification_metrics: {
+            "cosine_similarity": 85,
+            "jaccard_index": 72,
+            "edit_distance": 90,
+            "semantic_similarity": 78
+        }
+    };
+    
+    // Get the container for metrics
+    const metricsContainer = document.getElementById('metrics-container');
+    
+    // Generate progress bars for each metric
+    for (const [metricName, metricValue] of Object.entries(record.verification_metrics)) {
+        // Create formatted metric name (capitalize first letter of each word)
+        const formattedName = metricName.split('_')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+        
+        // Create column div
+        const colDiv = document.createElement('div');
+        colDiv.className = 'col-md-6 mb-3';
+        
+        // Add heading
+        const heading = document.createElement('h6');
+        heading.textContent = formattedName;
+        colDiv.appendChild(heading);
+        
+        // Create progress container
+        const progressDiv = document.createElement('div');
+        progressDiv.className = 'progress';
+        
+        // Create progress bar
+        const progressBar = document.createElement('div');
+        progressBar.className = 'progress-bar';
+        progressBar.role = 'progressbar';
+        progressBar.style.width = `${Math.round(metricValue)}%`;
+        progressBar.setAttribute('aria-valuenow', Math.round(metricValue));
+        progressBar.setAttribute('aria-valuemin', '0');
+        progressBar.setAttribute('aria-valuemax', '100');
+        progressBar.textContent = `${Math.round(metricValue)}%`;
+        
+        // Assemble the elements
+        progressDiv.appendChild(progressBar);
+        colDiv.appendChild(progressDiv);
+        metricsContainer.appendChild(colDiv);
+    }
+</script>
+            
+            <div class="d-flex justify-content-between mt-4">
+                <a href="{% url 'verification_history' %}" class="btn btn-secondary">Back to History</a>
+                <a href="{% url 'verification_form' %}?profile_id={{ record.user_profile.id }}" class="btn btn-primary">
+                    Verify Another Signature
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
