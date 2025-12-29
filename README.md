@@ -1,4 +1,4 @@
-# Hybrid Ensemble Signature Verification System
+# Signature Verification System
 
 ## Abstract
 
